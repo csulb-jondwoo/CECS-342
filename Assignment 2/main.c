@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-struct Block* heapPtr;
+//Points to my_heap for deallocation purposes
+void* heapPtr;
 
 //1. Define struct to represent allocation block
 struct Block {
@@ -27,10 +28,10 @@ void my_initialize_heap(int size) {
   free_head->next_block = NULL;
 }
 
+// Allocates minimum required memory size for data
 int calculateMinBlockSizeReq(size) {
   int remainder = size % VOID_PTR_SIZE;
   if (remainder) {
-    // not a multiple
     // round up to next closest multiple
     size += VOID_PTR_SIZE - remainder;
     return size;
@@ -43,7 +44,6 @@ int calculateMinBlockSizeReq(size) {
 // //6. allocates block of memory + return pointer of block for req
 void* my_malloc(int size) {
 	struct Block *new_block; // temp ptr to new block being made from split
-  // Get size of block as multiple of void pointer size
 	
   // walk the free list checking for a block to fit the alloc request until curr_block is NULL
   while(free_head) {
@@ -53,7 +53,7 @@ void* my_malloc(int size) {
       if (free_head->block_size >= allocation_size) {
         // has enough size
         // decide whether to split
-        // if you split, does excess_mem have more enough for minBlockSizeReq and overhead?
+        // if you split, does excess_mem have more enough for allocation_size and overhead?
         int excess_mem = free_head->block_size - allocation_size - OVERHEAD_SIZE;
         if (excess_mem >= VOID_PTR_SIZE) {
           // split
@@ -76,7 +76,7 @@ void* my_malloc(int size) {
           return ++new_block;
         }
       } else {
-        // not enough for minBlockSizeReq
+        // not enough for allocation_size
         free_head = free_head->next_block;
       }
   }
@@ -102,7 +102,6 @@ void test() {
   printf("Allocating second int...\n");
   int* a2 = my_malloc(sizeof(int));
   printf("Address of second int: %p\n", a2);
-  // my_free(a2);
   printf("\n");
 
 
@@ -186,21 +185,26 @@ void get_sigma() {
   double mean, summation, sigma= 0;
   scanf("%d", &size);
 
+  // allocate user defined array size
   int* arr_ptr = my_malloc(sizeof(int) * size);
 
+  // populate the array with user input
   for (int i = 0; i < size; i++) 
   {
     printf("\nPopulate the list: ");
     scanf("%d", &arr_ptr[i]);
   }
   
+  // sum up the total of user input
   for (int i = 0; i < size; i++) 
   {
     arr_sum += arr_ptr[i];
   }
 
+  // calculate mean
   mean = arr_sum / size;
   
+  // main formula
   for (int i = 0; i < size; i++) 
   {
     summation += pow(arr_ptr[i] - mean, 2);
@@ -217,7 +221,7 @@ int main(void) {
   get_sigma();
   
   //Frees the heap memory
-  // free(heapPtr);
+  free(heapPtr);
   
   return 0;
 }
