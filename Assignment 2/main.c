@@ -180,8 +180,7 @@ void test() {
   printf("\n"); 
 }
 
-void get_sigma()
-{
+void get_sigma() {
   printf("initialize array size: ");
   int size, arr_sum = 0;
   double mean, summation, sigma= 0;
