@@ -28,7 +28,8 @@ void my_initialize_heap(int size) {
   free_head->next_block = NULL;
 }
 
-// Allocates minimum required memory size for data
+// Checks if size of requested memory is a multiple of VOID_PTR_SIZE,
+// and allocates required size if not
 int calculateMinBlockSizeReq(size) {
   int remainder = size % VOID_PTR_SIZE;
   if (remainder) {
@@ -43,6 +44,7 @@ int calculateMinBlockSizeReq(size) {
 
 // //6. allocates block of memory + return pointer of block for req
 void* my_malloc(int size) {
+  struct Block *prev_block = NULL; 
 	struct Block *new_block; // temp ptr to new block being made from split
 	
   // walk the free list checking for a block to fit the alloc request until curr_block is NULL
@@ -53,7 +55,6 @@ void* my_malloc(int size) {
       if (free_head->block_size >= allocation_size) {
         // has enough size
         // decide whether to split
-        // if you split, does excess_mem have more enough for allocation_size and overhead?
         int excess_mem = free_head->block_size - allocation_size - OVERHEAD_SIZE;
         if (excess_mem >= VOID_PTR_SIZE) {
           // split
@@ -76,9 +77,20 @@ void* my_malloc(int size) {
           return ++new_block;
         }
       } else {
+        // redirect pointers
         // not enough for allocation_size
+        // sigma doesnt work currently with all tests together bc this if check
+        // if (prev_block) {
+        //      prev_block->next_block = free_head->next_block;
+        //   } //If there was a prev block, set it to the next one
+        //   else {
+        //     free_head = free_head->next_block;
+        //   } //the first node
+        
         free_head = free_head->next_block;
+        // prev_block = free_head;
       }
+      // prev_block = free_head;
   }
   return 0; //No free block found
 };
@@ -94,6 +106,7 @@ void test() {
   printf("Test 1\n");
   printf("Allocating first int...\n");
   int* a1 = my_malloc(sizeof(int));
+  
   printf("Address of first int: %p\n", a1);
 
   printf("Freeing first int...\n");
@@ -109,10 +122,12 @@ void test() {
   printf("Test 2\n");
   printf("Allocating first int...\n");
   int* b1 = my_malloc(sizeof(int));
+  
   printf("Address of first int: %p\n", b1);
 
   printf("Allocating second int...\n");
   int* b2 = my_malloc(sizeof(int));
+  
   printf("Address of first int: %p\n", b2);
 
   printf("overhead + void ptr Size: %d\n", OVERHEAD_SIZE + VOID_PTR_SIZE);
@@ -135,6 +150,7 @@ void test() {
 
   printf("Freeing second int...\n");
   my_free(c2);
+  
 
   printf("Allocating double...\n");
   int* c4 = my_malloc(sizeof(double));
@@ -177,6 +193,17 @@ void test() {
   my_free(e2);
   printf("Address of int:  %p\n", e2);
   printf("\n"); 
+
+
+  // Free the memory
+  my_free(b1);
+  my_free(b2);
+  my_free(c1);
+  my_free(c3);
+  my_free(c4);
+  my_free(d1);
+  my_free(d2);
+  my_free(e1);
 }
 
 void get_sigma() {
@@ -211,8 +238,11 @@ void get_sigma() {
   }
 
   sigma = sqrt(summation / size);
+
   printf("sigma: %f\n", sigma);
-  
+
+  //free the allocated array
+  my_free(arr_ptr);
 }
 
 int main(void) {
